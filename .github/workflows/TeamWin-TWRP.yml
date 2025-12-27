@@ -22,11 +22,11 @@ on:
       DEVICE_TREE:
         description: 'Custom Recovery Tree' # Your already made Device Tree for TWRP
         required: true
-        default: 'https://github.com/catdev-cloud/android_device_samsung_gta4lve'
+        default: 'https://github.com/DevCat3/android_device_samsung_gta4lve'
       DEVICE_TREE_BRANCH:
         description: 'Custom Recovery Tree Branch' # Your Device Tree Branch, make sure it's right.
         required: true
-        default: 'twrp-11'
+        default: 'android-11.0'
       BUILD_TARGET:
         description: 'Specify your Build Target' # Pick among boot, recovery and vendor_boot
         required: true
@@ -182,12 +182,20 @@ jobs:
     - name: Set Build Date # Output will be use in Release
       run: |
         echo "BUILD_DATE=$(date +%Y%m%d)" >> $GITHUB_ENV
+
+    - name: Zip recovery image
+      run: |
+        cd android-recovery/out/target/product/${{ env.DEVICE_NAME }}
+        ZIP_NAME=TWRP-${{ env.DEVICE_NAME }}-${{ env.BUILD_TARGET_NAME }}-${{ env.BUILD_DATE }}.zip
+        zip -r $ZIP_NAME ${{ env.BUILD_TARGET_NAME }}.img
+        echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
       
     - name: Upload to Release
       uses: softprops/action-gh-release@master
       with:
         files: |
           android-recovery/out/target/product/${{ env.DEVICE_NAME }}/${{ env.BUILD_TARGET_NAME }}.img
+          android-recovery/out/target/product/${{ env.DEVICE_NAME }}/${{ env.ZIP_NAME }}
           android-recovery/out/target/product/${{ env.DEVICE_NAME }}/*installer*zip
           android-recovery/out/target/product/${{ env.DEVICE_NAME }}/ramdisk-recovery.*
         name: Unofficial TWRP for ${{ env.DEVICE_NAME }} // ${{ env.BUILD_DATE }}
